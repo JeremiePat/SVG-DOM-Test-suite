@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>SVG DOM Test harness</title>
+
+	<script src="testrunner.js"></script>
+	<script>
+(function(){
+	var root, pendingTable, result = [0,0,0],
+	    basicTpl = {
+	    	root : '<div class="test"><table><thead><tr><th scope="row"><h2></h2><p></p></th><td>running</td></tr></thead><tbody></tbody></tabl></div>',
+	    	row : '<tr><th scope="row"></th><td></td></tr>'
+	    },
+	    label = {
+	    	pass: "OK",
+	    	fail: "Fail",
+	    	partial: "Partial"
+	    }
+	    
+	    UI = {
+			onStart: function(e) {
+				document.getElementById('progress').className = 'showUI';
+				document.getElementById('percent').className = 'showUI';
+				document.getElementById('stat').className = 'showUI';
+				document.getElementById('result').className = 'showUI';
+				document.getElementById('result').innerHTML += basicTpl.root.replace('div class', 'div id="' + e.id + '" class');
+				pendingTable = "";
+				root = document.getElementById(e.id);
+				
+				root.getElementsByTagName("h2")[0].innerHTML = e.title;
+				root.getElementsByTagName("p")[0].innerHTML = e.comment;
+			},
+			
+			onStep: function(e) {
+				//console.log('step');
+				var pass = (e.conformance == 0 && "fail") || (e.conformance == 1 && "pass") || "partial";
+				
+				pendingTable += '<tr><th scope="row">' + e.title + (e.comment ? '<br><em>' + e.comment + '</em>' : '') + '</th><td class="' + pass + '">' + label[pass] + '</td>';
+			},
+			
+			onEnd: function(e) {
+				//console.log('end');
+				var stat = document.getElementById("stat"),
+				    pass = (e.conformance == 0 && "fail") || (e.conformance == 1 && "pass") || "partial";
+				
+				result[0] += e.conformance;
+				result[1]++;
+				
+				
+				document.getElementById("percent").innerHTML = (result[0]*100 / result[2]).toFixed(0) + "%";
+				stat.setAttribute('value', (result[1]*100 / result[2]).toFixed(0));
+				stat.innerHTML = (result[1]*100 / result[2]).toFixed(0) + "%";
+				
+				if ('100%' == stat.innerHTML) {
+					stat.className = 'hideUI';
+				}
+				
+				root.className = "test " + pass;
+				root.getElementsByTagName('p')[0].innerHTML += '<br><em class="show">▸ <a href="#' + e.id + '">show me details</a></em><em class="hide">▾ <a href="#hide">hide me details</a></em>';
+				root.getElementsByTagName('td')[0].setAttribute('class', pass);
+				root.getElementsByTagName('td')[0].innerHTML = (e.conformance * 100).toFixed(0) + "%";
+				root.getElementsByTagName('tbody')[0].innerHTML = pendingTable;
+			},
+			
+			pickTest: function() {
+				//console.log('pick');
+				var index, list = [],
+					select = document.getElementById("getTest"),
+					value = select.options[select.selectedIndex].value,
+					loop = value === "all" ? TESTLIST : value.split(' ');
+				
+				for (index in loop) {
+					index = isNaN(index) ? index : loop[index];
+					if (TESTLIST[index]) {
+						list.push(TESTLIST[index]);
+					}
+				}
+				
+				result = [0,0,list.length];
+	
+				document.getElementById('result').innerHTML = '<input type="checkbox" id="showDetails" /><label for="showAll">Show all details</label><input type="checkbox" id="showFailed" checked /><label for="showFailed">Show failed tests</label><input type="checkbox" id="showPartial" checked /><label for=showPartial>Show partial tests</label><input type="checkbox" id="showPassed" checked /><label for="showPassed">Show passed tests</label><hr>';
+				TESTRUNNER.load(list);
+				TESTRUNNER.run();
+			}
+		}
+	
+	window.UI = UI;
+})();
+
+TESTRUNNER.addEventListener("start", UI.onStart);
+TESTRUNNER.addEventListener("step",  UI.onStep);
+TESTRUNNER.addEventListener("end",   UI.onEnd);
+
+var TESTLIST = {
+	SVGAltGlyphElement: "SVG11/SVGAltGlyphElement.js",
+	SVGAltGlyphDefElement: "SVG11/SVGAltGlyphDefElement.js",
+	SVGAltGlyphItemElement: "SVG11/SVGAltGlyphItemElement.js",
+	SVGAnimatedPoints: "SVG11/SVGAnimatedPoints.js",
+	SVGCircleElement: "SVG11/SVGCircleElement.js",
+	SVGClipPathElement: "SVG11/SVGClipPathElement.js",
+	SVGDefsElement: "SVG11/SVGDefsElement.js",
+	SVGDescElement: "SVG11/SVGDescElement.js",
+	SVGElementInstance: "SVG11/SVGElementInstance.js",
+	SVGElementInstanceList: "SVG11/SVGElementInstanceList.js",
+	SVGEllipseElement: "SVG11/SVGEllipseElement.js",
+	SVGGElement: "SVG11/SVGGElement.js",
+	SVGGlyphRefElement: "SVG11/SVGGlyphRefElement.js",
+	SVGGradientElement: "SVG11/SVGGradientElement.js",
+	SVGImageElement: "SVG11/SVGImageElement.js",
+	SVGLinearGradientElement: "SVG11/SVGLinearGradientElement.js",
+	SVGLineElement: "SVG11/SVGLineElement.js",
+	SVGMarkerElement: "SVG11/SVGMarkerElement.js",
+	SVGMaskElement: "SVG11/SVGMaskElement.js",
+	SVGMatrix: "SVG11/SVGMatrix.js",
+	SVGPathElement: "SVG11/SVGPathElement.js",
+	SVGPathSeg: "SVG11/SVGPathSeg.js",
+	SVGPathSegClosePath: "SVG11/SVGPathSegClosePath.js",
+	SVGPathSegMovetoAbs: "SVG11/SVGPathSegMovetoAbs.js",
+	SVGPathSegMovetoRel: "SVG11/SVGPathSegMovetoRel.js",
+	SVGPathSegLinetoAbs: "SVG11/SVGPathSegLinetoAbs.js",
+	SVGPathSegLinetoRel: "SVG11/SVGPathSegLinetoRel.js",
+	SVGPathSegCurvetoCubicAbs: "SVG11/SVGPathSegCurvetoCubicAbs.js",
+	SVGPathSegCurvetoCubicRel: "SVG11/SVGPathSegCurvetoCubicRel.js",
+	SVGPathSegCurvetoQuadraticAbs: "SVG11/SVGPathSegCurvetoQuadraticAbs.js",
+	SVGPathSegCurvetoQuadraticRel: "SVG11/SVGPathSegCurvetoQuadraticRel.js",
+	SVGPathSegArcAbs: "SVG11/SVGPathSegArcAbs.js",
+	SVGPathSegArcRel: "SVG11/SVGPathSegArcRel.js",
+	SVGPathSegLinetoHorizontalAbs: "SVG11/SVGPathSegLinetoHorizontalAbs.js",
+	SVGPathSegLinetoHorizontalRel: "SVG11/SVGPathSegLinetoHorizontalRel.js",
+	SVGPathSegLinetoVerticalAbs: "SVG11/SVGPathSegLinetoVerticalAbs.js",
+	SVGPathSegLinetoVerticalRel: "SVG11/SVGPathSegLinetoVerticalRel.js",
+	SVGPathSegCurvetoCubicSmoothAbs: "SVG11/SVGPathSegCurvetoCubicSmoothAbs.js",
+	SVGPathSegCurvetoCubicSmoothRel: "SVG11/SVGPathSegCurvetoCubicSmoothRel.js",
+	SVGPathSegCurvetoQuadraticSmoothAbs: "SVG11/SVGPathSegCurvetoQuadraticSmoothAbs.js",
+	SVGPathSegCurvetoQuadraticSmoothRel: "SVG11/SVGPathSegCurvetoQuadraticSmoothRel.js",
+	SVGPatternElement: "SVG11/SVGPatternElement.js",
+	SVGPoint: "SVG11/SVGPoint.js",
+	SVGPolygonElement: "SVG11/SVGPolygonElement.js",
+	SVGPolylineElement: "SVG11/SVGPolylineElement.js",
+	SVGRadialGradientElement: "SVG11/SVGRadialGradientElement.js",
+	SVGRectElement: "SVG11/SVGRectElement.js",
+	SVGStopElement: "SVG11/SVGStopElement.js",
+	SVGStyleElement: "SVG11/SVGStyleElement.js",
+	SVGSVGElement: "SVG11/SVGSVGElement.js",
+	SVGSwitchElement: "SVG11/SVGSwitchElement.js",
+	SVGSymbolElement: "SVG11/SVGSymbolElement.js",
+	SVGTextContentElement: "SVG11/SVGTextContentElement.js",
+	SVGTextElement: "SVG11/SVGTextElement.js",
+	SVGTextPathElement: "SVG11/SVGTextPathElement.js",
+	SVGTextPositioningElement: "SVG11/SVGTextPositioningElement.js",
+	SVGTitleElement: "SVG11/SVGTitleElement.js",
+	SVGTransform: "SVG11/SVGTransform.js",
+	SVGTRefElement: "SVG11/SVGTRefElement.js",
+	SVGTSpanElement: "SVG11/SVGTSpanElement.js",
+	SVGUseElement: "SVG11/SVGUseElement.js"
+}
+
+	</script>
+	
+	<style>
+.hideUI{display:none}
+.showUI{display:block}
+
+body{
+	font: .9em Arial, sans-serif;
+	padding: 1em;
+	margin: 0
+}
+
+h1, form, #result, #progress{
+	margin: 1em auto;
+	max-width: 600px;
+}
+
+#progress{
+	text-align: center;
+}
+
+#percent{
+	font: 4em Impact, sans-serif;
+}
+
+progress{
+	width: 100%;
+}
+
+form{
+	text-align: center;
+}
+
+form label, form input, form select {
+	vertical-align: middle;
+}
+
+h1{
+	font: bold 1.2em Georgia, serif;
+	text-align: center;
+	text-transform: uppercase;
+	margin: 0.8em auto;
+}
+
+h2{
+	font: bold 1em Arial, sans-serif;
+	margin:0;
+}
+
+h2+p{
+	margin:0;
+}
+
+form, #result{
+	padding: .9em 1em .7em;
+	border: 1px solid #CCC;
+	border-radius: 5px;
+	background: #F3F3F3;
+}
+
+#result{
+	font-size: .8em;
+	text-align: center;
+}
+
+.test{
+	font-size: 1.2em;
+	text-align: left;
+	border-bottom: 1px solid #999; 
+}
+
+.test:last-child{
+	border: none;
+}
+
+.test p{
+	font: 0.8em Verdana, sans-serif;
+}
+
+.test .pending {
+	font-style: italic;
+}
+
+table{
+	width: 100%;
+	font: 0.8em Verdana, sans-serif;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+tbody{
+	display: none;
+}
+
+:target tbody{
+	display: table-row-group;
+}
+
+.hide{display:none}
+.show{display:inline}
+
+:target .hide{display:inline}
+:target .show{display:none}
+
+table a{
+	font: italic 1em Arial, sans-serif;
+}
+
+th, td{
+	border-top: 1px solid #CCC;
+	padding: .3em 0;
+}
+
+thead th, thead td{
+	border-top: none;
+}
+
+thead th{
+	font-size: 1.2em;
+}
+
+th{
+	text-align: left;
+}
+
+td{
+	text-align: center;
+	width:4.5em;
+}
+
+tbody th{
+	padding-left: .2em;
+	font-weight: normal;
+}
+
+tbody th:before{
+	content: "↳ ";
+}
+
+tbody th em{
+	display : inline-block;
+	color: #888;
+	font-size: .9em;
+	margin: 0 1em;
+}
+
+td.pass{
+	background: #D4F594;
+	color: #273608;
+	border-right: 5px solid #690;
+}
+
+td.fail{
+	background: #FCC;
+	color: #900;
+	border-right: 5px solid #C00;
+}
+
+td.partial{
+	background: #F7EEA6;
+	color: #A37F07;
+	border-right: 5px solid #CFA313;
+}
+
+#showDetails:checked ~ .test tbody {
+	display: table-row-group;
+}
+
+#showFailed ~ div.fail,
+#showPassed ~ div.pass,
+#showPartial ~ div.partial,
+#showDetails:checked ~ .test thead em {
+	display: none;
+}
+
+#showFailed:checked ~ div.fail,
+#showPassed:checked ~ div.pass,
+#showPartial:checked ~ div.partial {
+	display: block;
+}
+	</style>
+</head>
+<body>
+<h1>SVG DOM Test harness</h1>
+
+<form action="#">
+	<label for="getTest">Select a test: </label>
+	<select id="getTest">
+		<option value="all">SVG 1.1 (2nd Edition)</option>
+		<optgroup label="Document Structure">
+			<option value="SVGDefsElement SVGDescElement SVGElementInstance SVGElementInstanceList SVGGElement SVGImageElement SVGSVGElement SVGSwitchElement SVGSymbolElement SVGTitleElement SVGUseElement">All tests</option>
+			<option value="SVGDefsElement">SVGDefsElement</option>
+			<option value="SVGDescElement">SVGDescElement</option>
+			<option value="SVGElementInstance">SVGElementInstance</option>
+			<option value="SVGElementInstanceList">SVGElementInstanceList</option>
+			<option value="SVGGElement">SVGGElement</option>
+			<option value="SVGImageElement">SVGImageElement</option>
+			<option value="SVGSVGElement">SVGSVGElement</option>
+			<option value="SVGSwitchElement">SVGSwitchElement</option>
+			<option value="SVGSymbolElement">SVGSymbolElement</option>
+			<option value="SVGTitleElement">SVGTitleElement</option>
+			<option value="SVGUseElement">SVGUseElement</option>
+		</optgroup>
+		<optgroup label="Styling">
+			<option value="SVGStyleElement">SVGStyleElement</option>
+		</optgroup>
+		<optgroup label="Coordinate Systems, Transformations and Units">
+			<option value="SVGMatrix SVGPoint SVGTransform">All tests</option>
+			<option value="SVGMatrix">SVGMatrix</option>
+			<option value="SVGPoint">SVGPoint</option>
+			<option value="SVGTransform">SVGTransform</option>
+		</optgroup>
+		<optgroup label="Path">
+			<option value="SVGPathElement SVGPathSeg SVGPathSegArcAbs SVGPathSegArcRel SVGPathSegClosePath SVGPathSegCurvetoCubicAbs SVGPathSegCurvetoCubicRel SVGPathSegCurvetoCubicSmoothAbs SVGPathSegCurvetoCubicSmoothRel SVGPathSegCurvetoQuadraticAbs SVGPathSegCurvetoQuadraticRel SVGPathSegCurvetoQuadraticSmoothAbs SVGPathSegCurvetoQuadraticSmoothRel SVGPathSegLinetoAbs SVGPathSegLinetoRel SVGPathSegLinetoHorizontalAbs SVGPathSegLinetoHorizontalRel SVGPathSegLinetoVerticalAbs SVGPathSegLinetoVerticalRel SVGPathSegMovetoAbs SVGPathSegMovetoRel">All tests</option>
+			<option value="SVGPathElement">SVGPathElement</option>
+			<option value="SVGPathSeg">SVGPathSeg</option>
+			<option value="SVGPathSegArcAbs">SVGPathSegArcAbs</option>
+			<option value="SVGPathSegArcRel">SVGPathSegArcRel</option>
+			<option value="SVGPathSegClosePath">SVGPathSegClosePath</option>
+			<option value="SVGPathSegCurvetoCubicAbs">SVGPathSegCurvetoCubicAbs</option>
+			<option value="SVGPathSegCurvetoCubicRel">SVGPathSegCurvetoCubicRel</option>
+			<option value="SVGPathSegCurvetoCubicSmoothAbs">SVGPathSegCurvetoCubicSmoothAbs</option>
+			<option value="SVGPathSegCurvetoCubicSmoothRel">SVGPathSegCurvetoCubicSmoothRel</option>
+			<option value="SVGPathSegCurvetoQuadraticAbs">SVGPathSegCurvetoQuadraticAbs</option>
+			<option value="SVGPathSegCurvetoQuadraticRel">SVGPathSegCurvetoQuadraticRel</option>
+			<option value="SVGPathSegCurvetoQuadraticSmoothAbs">SVGPathSegCurvetoQuadraticSmoothAbs</option>
+			<option value="SVGPathSegCurvetoQuadraticSmoothRel">SVGPathSegCurvetoQuadraticSmoothRel</option>
+			<option value="SVGPathSegLinetoAbs">SVGPathSegLinetoAbs</option>
+			<option value="SVGPathSegLinetoRel">SVGPathSegLinetoRel</option>
+			<option value="SVGPathSegLinetoHorizontalAbs">SVGPathSegLinetoHorizontalAbs</option>
+			<option value="SVGPathSegLinetoHorizontalRel">SVGPathSegLinetoHorizontalRel</option>
+			<option value="SVGPathSegLinetoVerticalAbs">SVGPathSegLinetoVerticalAbs</option>
+			<option value="SVGPathSegLinetoVerticalRel">SVGPathSegLinetoVerticalRel</option>
+			<option value="SVGPathSegMovetoAbs">SVGPathSegMovetoAbs</option>
+			<option value="SVGPathSegMovetoRel">SVGPathSegMovetoRel</option>
+		</optgroup>
+		<optgroup label="Basic shapes">
+			<option value="SVGAnimatedPoints SVGCircleElement SVGEllipseElement SVGLineElement SVGPolygonElement SVGPolylineElement SVGRectElement">All tests</option>
+			<option value="SVGAnimatedPoints">SVGAnimatedPoints</option>
+			<option value="SVGCircleElement">SVGCircleElement</option>
+			<option value="SVGEllipseElement">SVGEllipseElement</option>
+			<option value="SVGLineElement">SVGLineElement</option>
+			<option value="SVGPolygonElement">SVGPolygonElement</option>
+			<option value="SVGPolylineElement">SVGPolylineElement</option>
+			<option value="SVGRectElement">SVGRectElement</option>
+		</optgroup>
+		<optgroup label="Text">
+			<option value="SVGAltGlyphElement SVGAltGlyphDefElement SVGAltGlyphItemElement SVGGlyphRefElement SVGTextContentElement SVGTextElement SVGTextPathElement SVGTextPositioningElement SVGTRefElement SVGTSpanElement">All tests</option>
+			<option value="SVGAltGlyphElement">SVGAltGlyphElement</option>
+			<option value="SVGAltGlyphDefElement">SVGAltGlyphDefElement</option>
+			<option value="SVGAltGlyphItemElement">SVGAltGlyphItemElement</option>
+			<option value="SVGGlyphRefElement">SVGGlyphRefElement</option>
+			<option value="SVGTextContentElement">SVGTextContentElement</option>
+			<option value="SVGTextElement">SVGTextElement</option>
+			<option value="SVGTextPathElement">SVGTextPathElement</option>
+			<option value="SVGTextPositioningElement">SVGTextPositioningElement</option>
+			<option value="SVGTRefElement">SVGTRefElement</option>
+			<option value="SVGTSpanElement">SVGTSpanElement</option>
+		</optgroup>
+		<optgroup label="Filling, Stroking and Marker Symbols">
+			<option value="SVGMarkerElement">SVGMarkerElement</option>
+		</optgroup>
+		<optgroup label="Gradients and Patterns">
+			<option value="SVGGradientElement SVGLinearGradientElement SVGRadialGradientElement SVGStopElement SVGPatternElement">All tests</option>
+			<option value="SVGGradientElement">SVGGradientElement</option>
+			<option value="SVGLinearGradientElement">SVGLinearGradientElement</option>
+			<option value="SVGRadialGradientElement">SVGRadialGradientElement</option>
+			<option value="SVGStopElement">SVGStopElement</option>
+			<option value="SVGPatternElement">SVGPatternElement</option>
+		</optgroup>
+		<optgroup label="Clipping, Masking and Compositing">
+			<option value="SVGMaskElement SVGClipPathElement">All tests</option>
+			<option value="SVGClipPathElement">SVGClipPathElement</option>
+			<option value="SVGMaskElement">SVGMaskElement</option>
+		</optgroup>
+	</select>
+	<input id="launcher" type="submit" value="Run that test!" onclick="UI.pickTest();return false;" />
+</form>
+<div id="progress" class="hideUI">
+	<div id="percent" class="hideUI"></div>
+	<progress id="stat" class="hideUI" value="0" max="100">0%</progress>
+</div>
+<div id="result" class="hideUI"></div>
+</body>
+</html>
